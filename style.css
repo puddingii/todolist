@@ -1,0 +1,36 @@
+.container {
+    width: 60%;
+    margin: 0 auto;
+    padding: 3em;
+}
+
+.spacer-10 {
+    width: 100%;
+    margin: 10px 0;
+    padding: 0;
+}
+
+.todo-item {
+    margin-bottom: 10px;
+}
+
+#header-title {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align:center;
+}
+
+.todo-item>.card-body {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.todo-item-text {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: 5px;
+}
+
+#header-img {
+    height: 250px;
+}

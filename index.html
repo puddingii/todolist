@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Website meta info -->
+        <title>Web Lesson</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div id="header-title">
+                        <div class="card">
+                            <img src="http://gun4930.dothome.co.kr/asdf.PNG" class="card-img-top" id="header-img">
+                            <div class="card-body">
+                                <h1>Todo List App</h1>
+                                <p class="card-text">Todo list management program.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="spacer-10"></div>
+
+                <div class="col-12" id="alert-container">
+                </div>
+
+                <div class="col-12">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="todo-input" placeholder="What to do?">
+                        <div class="input-group-append">
+                            <button class="btn btn-success" type="button" id="todo-submit">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div id="item-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+        <script src="app.js"></script>
+        <script type="text/javascript">
+            let itemCount = 0;
+            document.addEventListener('DOMContentLoaded', () => {
+                // add item
+                const itemAdd = document.getElementById('todo-submit');
+                itemAdd.addEventListener('click', () => {
+                    let todoText = document.getElementById('todo-input');
+                    if(!todoText.value) {
+                        printAlert('danger', 'No value entered.');
+                    } else {
+                        addTodoList(todoText.value);
+                        printAlert('success', 'Todo item added.');
+
+                        todoText.value = '';
+
+                        const todoItem = document.getElementsByClassName('todo-item')[0];
+                        console.log(todoItem);
+                            if(typeof(todoItem) != 'undefined' && todoItem != null) {
+                                // edit item
+                                const itemEdit = document.getElementsByClassName('edit')[itemCount];
+                                itemEdit.addEventListener('click', (e) => {
+                                    let text = prompt('Edit todo item text: ');
+                                    let itemId = e.target.id.split('-')[1];
+                                    const listItem = document.getElementById(itemId);
+                                    listItem.querySelector('.todo-item-text').innerText = text;
+                                });
+
+                                // remove item
+                                const itemRemove = document.getElementsByClassName('remove')[itemCount];
+                                itemRemove.addEventListener('click', (e) => {
+                                    let itemId = e.target.id.split('-')[1];
+                                    const listItem = document.getElementById(itemId);
+                                    listItem.parentNode.removeChild(listItem);
+                                });
+                            }
+
+                        itemCount++;
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
