@@ -1,7 +1,48 @@
+.complete {
+    text-decoration: line-through;
+}
+
+.card-img-top {
+    width:100%;
+    object-fit:cover;
+}
+
+.todo-item-title {
+    transition: color 0.5s;
+    transition-timing-function: ease;
+}
+
+.todo-item-title:hover {
+    color: #28A745;
+    cursor: pointer;
+    transition: color 0.5s;
+    transition-timing-function: ease;
+}
+
 .container {
     width: 60%;
     margin: 0 auto;
     padding: 3em;
+}
+
+#pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.paginationjs {
+    display: inline-block;
+}
+
+.paginationjs .paginationjs-pages li>a{
+    min-width: 40px;
+    height: 38px;
+    line-height: 38px;
+}
+
+.paginationjs .paginationjs-pages li.active>a {
+    height: 40px;
+    line-height: 40px;
 }
 
 .spacer-10 {
@@ -10,8 +51,18 @@
     padding: 0;
 }
 
+.todo-form-container {
+    padding: 1em;
+}
+
 .todo-item {
     margin-bottom: 10px;
+}
+
+.selected {
+    background-color: gray;
+    color:white;
+    text-decoration: line-through;
 }
 
 #header-title {

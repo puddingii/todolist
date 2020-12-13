@@ -9,6 +9,10 @@
         <title>Web Lesson</title>
 
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <!-- pagenination.js stylesheet -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paginationjs/2.1.5/pagination.css">
+
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
@@ -25,70 +29,234 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="spacer-10"></div>
 
                 <div class="col-12" id="alert-container">
                 </div>
 
                 <div class="col-12">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="todo-input" placeholder="What to do?">
-                        <div class="input-group-append">
-                            <button class="btn btn-success" type="button" id="todo-submit">Add</button>
+                    <div class="card todo-form-container mb-3">
+                        <div class="form-group mb-3">
+                            <input type="text" class="form-control" id="todo-title" placeholder="Todo title here.">
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="todo-memo" placeholder="Todo memo here.">
+                            <div class="input-group-append">
+                                <button class="btn btn-success" id="todo-submit">Add</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-12">
                     <div id="item-container"></div>
+                    <div id="pagination"></div>
                 </div>
             </div>
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 
+        <!-- pagination.js from pagination.js.org -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paginationjs/2.1.5/pagination.js"></script>
+
         <script src="app.js"></script>
+        <script src="alert-message.js"></script>
         <script type="text/javascript">
-            let itemCount = 0;
             document.addEventListener('DOMContentLoaded', () => {
+                // click button by enter key
+                let input = document.getElementById('todo-memo');
+                input.addEventListener('keyup', (e) => {
+                    if(e.keyCode === 13) { // enter key
+                        event.preventDefault();
+                        document.getElementById('todo-submit').click();
+                    }
+                });
+
                 // add item
                 const itemAdd = document.getElementById('todo-submit');
                 itemAdd.addEventListener('click', () => {
-                    let todoText = document.getElementById('todo-input');
-                    if(!todoText.value) {
-                        printAlert('danger', 'No value entered.');
+                    let todoTitle = document.getElementById('todo-title');
+                    let todoMemo = document.getElementById('todo-memo');
+                    let todoObj = {
+                        title: todoTitle.value,
+                        memo: todoMemo.value,
+                        completed: false
+                    };
+                    if(!todoObj.title) {
+                        $('#alert-container').AlertMessage({
+                            action: 'show',
+                            type: 'danger',
+                            content: {
+                                title: 'Failed',
+                                text: 'No value entered.'
+
+                            },
+                            dismissible: false,
+                            timeout: 3000
+                        });
                     } else {
-                        addTodoList(todoText.value);
-                        printAlert('success', 'Todo item added.');
+                        addTodoList(todoObj);
+                        $('#alert-container').AlertMessage({
+                            action: 'show',
+                            type: 'success',
+                            content: {
+                                title: 'Succeed',
+                                text: 'value entered.'
 
-                        todoText.value = '';
+                            },
+                            dismissible: false,
+                            timeout: 3000
+                        });
+                        todoTitle.value = '';
+                        todoMemo.value = '';
+                    }
+                });
 
-                        const todoItem = document.getElementsByClassName('todo-item')[0];
-                            if(typeof(todoItem) != 'undefined' && todoItem != null) {
-                                // edit item
-                                const itemEdit = document.getElementsByClassName('edit')[itemCount];
-                                itemEdit.addEventListener('click', (e) => {
-                                    let text = prompt('Edit todo item text: ');
-                                    let itemId = e.target.id.split('-')[1];
-                                    const listItem = document.getElementById(itemId);
-                                    listItem.querySelector('.todo-item-text').innerText = text;
+                // pagination.js
+                $('#pagination').pagination({
+                    dataSource: loadObjData('itemList'), // js array data
+                    pageSize: 15, // 5 items per page
+                    callback: function(data, pagination) {
+                        const itemContainer = document.getElementById('item-container');
+                        let elem = '';
+                        data.forEach(element => {
+                            elem += `
+                            <div class="card todo-item" id="${element.itemId}">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-sm-9">
+                                            <h3 class="todo-item-title ${element.completed?'complete':''}">${element.title}</h3>
+                                            <span class="todo-item-memo">
+                                                ${element.memo}
+                                            </span>
+                                        </div>
+                                        <div class="col-sm-3 text-right">
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" id="action-${element.itemId}" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ${element.completed?'disabled':''}>
+                                                    Action
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item edit" id="edit-${element.itemId}" href="#">Edit</a>
+                                                    <a class="dropdown-item remove" id="remove-${element.itemId}" href="#">Remove</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                        });
+                        itemContainer.innerHTML = elem;
+
+                        // complete todo item
+                        $('.todo-item-title').on('click', function(e) {
+                            //가장가까운거 가져오기.
+                            const itemId = e.target.closest('.todo-item').id;
+                            //jquery
+                            if($(this).hasClass('complete')) {
+                                $('#action-' + itemId).attr('disabled',false);
+                            }
+                            else {
+                                //disable dropdown button
+                                $('#action-' + itemId).attr('disabled',true);
+                            }
+                            $(this).toggleClass('complete');
+                            updateCompleted(itemId);
+                            
+                            
+                        });
+
+                        // edit item
+                        $('.edit').on('click', (e) => {
+                            const itemId = e.target.id.split('-')[1];
+                            const filteredItem = getSingleItem('itemList', itemId);
+
+                            let title = prompt('Edit todo item\'s title: ', filteredItem.title);
+                            if(title == '' || title == null) {
+                                return;
+                            }
+                            let memo = prompt('Edit todo item\'s memo: ', filteredItem.memo);
+                            if(memo == '' || memo == null) {
+                                return;
+                            }
+
+                            if ((title != '' && title != null) && (memo != '' && memo != null)) {
+                                const listItem = document.getElementById(itemId);
+                                listItem.querySelector('.todo-item-title').innerText = title;
+                                listItem.querySelector('.todo-item-memo').innerText = memo;
+
+                                // edit item from localstorage data
+                                let tmpObjArr = loadObjData('itemList');
+                                tmpObjArr.forEach(item => {
+                                    if (item.itemId == itemId) {
+                                        item.title = title;
+                                        item.memo = memo;
+                                    }
+                                });
+                                saveObjData(tmpObjArr, 'itemList');
+
+                                $('#alert-container').AlertMessage({
+                                    action: 'show',
+                                    type: 'success',
+                                    content: {
+                                        title: 'Succeed',
+                                        text: 'Updated todo Item'
+
+                                    },
+                                    dismissible: false,
+                                    timeout: 3000
                                 });
 
-                                // remove item
-                                const itemRemove = document.getElementsByClassName('remove')[itemCount];
-                                itemRemove.addEventListener('click', (e) => {
-                                    let itemId = e.target.id.split('-')[1];
-                                    const listItem = document.getElementById(itemId);
-                                    listItem.parentNode.removeChild(listItem);
+                            } else {
+                                $('#alert-container').AlertMessage({
+                                    action: 'show',
+                                    type: 'warning',
+                                    content: {
+                                        title: 'warning',
+                                        text: '수정할 값은 빈칸이 될 수 없습니다.'
+
+                                    },
+                                    dismissible: true,
+                                    timeout: 3000
                                 });
                             }
 
-                        itemCount++;
+                            window.document.dispatchEvent(new Event("DOMContentLoaded", {
+                                bubbles: true,
+                                cancelable: true
+                            }));
+                        });
+
+                        // remove item
+                        $('.remove').on('click', (e) => {
+                            let removeConfirm = confirm('정말 이 Todo를 지우시겠습니까?');
+                            if(removeConfirm) {
+                                // remove item from dom
+                                let itemId = e.target.id.split('-')[1];
+                                const listItem = document.getElementById(itemId);
+                                listItem.parentNode.removeChild(listItem);
+
+                                // remove item from localstorage data
+                                let tmpObjArr = loadObjData('itemList');
+                                for (let i = 0; i < tmpObjArr.length; i++) {
+                                    if (tmpObjArr[i].itemId == itemId) {
+                                        tmpObjArr.splice(i, 1);
+                                        break;
+                                    }
+                                }
+                                saveObjData(tmpObjArr, 'itemList');
+
+                                window.document.dispatchEvent(new Event("DOMContentLoaded", {
+                                    bubbles: true,
+                                    cancelable: true
+                                }));
+                            }
+                        });
                     }
-                });
+                })
             });
         </script>
     </body>
